@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- фон виджета: тёмная плашка со скруглением, как блоки MUSICH -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#E6111111" />
+    <corners android:radius="24dp" />
+</shape>

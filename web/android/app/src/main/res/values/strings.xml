@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MUSICH</string>
+    <string name="title_activity_main">MUSICH</string>
+    <string name="package_name">app.musich</string>
+    <string name="custom_url_scheme">app.musich</string>
+    <string name="playback_channel">Воспроизведение</string>
+    <string name="np_prev">Назад</string>
+    <string name="np_play">Играть</string>
+    <string name="np_pause">Пауза</string>
+    <string name="np_next">Вперёд</string>
+    <string name="widget_idle">Пока ничего не играет</string>
+    <string name="widget_desc">Что играет и кнопки управления</string>
+</resources>

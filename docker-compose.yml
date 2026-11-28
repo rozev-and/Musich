@@ -1,0 +1,56 @@
+# MUSICH: локальный запуск и сборка из исходников.
+#   mkdir -p music data     # заранее, иначе docker создаст их от root
+#   docker compose up -d --build
+# Дальше всё в браузере: http://<адрес>:2290 → придумать пароль → Настройки → Папки с музыкой.
+# .env не нужен; при желании в нём можно поменять порт или uid (см. .env.example).
+
+name: musich
+
+services:
+  musich:
+    image: ${MUSICH_IMAGE:-musich:latest}
+    build:
+      context: .
+    container_name: musich
+    restart: unless-stopped
+    # uid:gid владельца каталогов с музыкой и данными на хосте
+    user: "${MUSICH_UID:-1000}:${MUSICH_GID:-1000}"
+    ports:
+      - "${MUSICH_BIND:-0.0.0.0}:${MUSICH_PORT:-2290}:2290"
+    environment:
+      PORT: "2290"
+      MUSIC_DIR: /music       # первая папка с музыкой при самом первом запуске
+      DATA_DIR: /data
+      SCAN_ON_START: ${SCAN_ON_START:-true}
+      TZ: ${TZ:-Europe/Moscow}
+      # устаревшее: старый общий токен, если им уже настроены устройства
+      MUSICH_TOKEN: ${MUSICH_TOKEN:-}
+    volumes:
+      - ${MUSIC_PATH:-./music}:/music
+      - ${DATA_PATH:-./data}:/data
+      # диски хоста: папки с музыкой на них выбираются в веб-морде (Настройки → Папки с музыкой)
+      - /mnt:/mnt
+      - /media:/media
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:2290/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # корень контейнера — только чтение: писать можно лишь в данные, музыку и /tmp
+    read_only: true
+    tmpfs:
+      - /tmp
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

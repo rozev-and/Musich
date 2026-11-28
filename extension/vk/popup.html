@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>MUSICH ← VK</title>
+    <style>
+      body { margin: 0; width: 280px; padding: 16px; background: #111; color: #eee; font: 14px/1.4 system-ui, sans-serif; }
+      h1 { margin: 0 0 8px; font-size: 15px; font-weight: 600; }
+      p { margin: 0 0 12px; color: #aaa; font-size: 12px; }
+      .err { color: #ff7a7a; }
+      button { width: 100%; padding: 10px; margin-top: 4px; border: 0; border-radius: 999px; background: #2b6cb0; color: #fff; font: inherit; cursor: pointer; }
+      button.sec { background: #2a2a2a; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <h1>MUSICH ← VK</h1>
+    <p id="status">…</p>
+    <p id="error" class="err" hidden></p>
+    <div id="perm" hidden>
+      <p>Браузер ещё не дал расширению доступ к vk.com и к твоему MUSICH — без него оно ничего не заберёт.</p>
+      <button id="grant">Разрешить доступ</button>
+    </div>
+    <button id="sync">Забрать сейчас</button>
+    <script src="config.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

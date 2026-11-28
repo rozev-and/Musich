@@ -1,0 +1,199 @@
+# Релиз MUSICH на GitHub: тег v* (git tag v0.1.0 && git push origin --tags) →
+#   - установщик для Windows (deploy/windows) — в релиз: MUSICH-Setup.exe и MUSICH-Setup-<версия>.exe;
+#   - приложение для ПК (desktop/, Tauri) — MUSICH-PC-Setup.exe и MUSICH-PC-Setup-<версия>.exe;
+#   - приложение для Android — MUSICH.apk и MUSICH-<версия>.apk, подписанные ключом из секретов
+#     ANDROID_KEYSTORE (файл .jks в base64), ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD.
+#     Нет секретов — APK в релиз не попадает (у форков, например);
+#   - Docker-образ для ПК и Raspberry Pi (amd64 + arm64) — ghcr.io/<владелец>/musich:<версия> и :latest.
+# Кнопки «Скачать» в README ведут сюда: releases/latest/download/MUSICH-Setup.exe и ghcr.io/…/musich:latest.
+# Проверка подлинности: рядом с .exe — SHA256SUMS.txt; у .exe и образа — подпись GitHub о том, где и из какого кода
+# они собраны (gh attestation verify MUSICH-Setup.exe -R rozev-and/Musich). С известной серьёзной дырой в зависимостях
+# релиз не выходит (npm audit).
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write # создать релиз и выложить файлы
+  packages: write # выложить Docker-образ в GitHub Container Registry
+  id-token: write # подписать файлы релиза
+  attestations: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24 # этот node.exe ляжет в установщик
+      - name: Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Зависимости
+        run: |
+          npm ci --prefix web --no-audit --no-fund
+          npm ci --prefix server --no-audit --no-fund
+      - name: Нет известных серьёзных дыр
+        run: |
+          npm audit --prefix server --omit=dev --audit-level=high
+          npm audit --prefix web --omit=dev --audit-level=high
+      - name: Установщик
+        run: node deploy/windows/build.mjs
+      - name: Контрольные суммы
+        shell: pwsh
+        working-directory: deploy/windows/out
+        run: Get-ChildItem MUSICH-Setup*.exe | ForEach-Object { "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $($_.Name)" } | Set-Content SHA256SUMS.txt -Encoding ascii
+      - name: Подпись GitHub
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: deploy/windows/out/MUSICH-Setup*.exe
+      - name: В релиз
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            deploy/windows/out/MUSICH-Setup.exe
+            deploy/windows/out/MUSICH-Setup-*.exe
+            deploy/windows/out/SHA256SUMS.txt
+          generate_release_notes: true
+
+  desktop:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri
+      - name: Зависимости
+        run: |
+          npm ci --prefix web --no-audit --no-fund
+          npm ci --prefix desktop --no-audit --no-fund
+      - name: Нет известных серьёзных дыр
+        run: npm audit --prefix web --omit=dev --audit-level=high
+      - name: Приложение для ПК
+        working-directory: desktop
+        run: npm run build
+      - name: В папку релиза
+        shell: pwsh
+        run: |
+          $v = (Get-Content web/package.json | ConvertFrom-Json).version
+          $exe = Get-ChildItem desktop/src-tauri/target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item $exe out/MUSICH-PC-Setup.exe
+          Copy-Item $exe "out/MUSICH-PC-Setup-$v.exe"
+          Set-Location out
+          Get-ChildItem MUSICH-PC-Setup*.exe | ForEach-Object { "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $($_.Name)" } | Set-Content SHA256SUMS-pc.txt -Encoding ascii
+      - name: Подпись GitHub
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: out/MUSICH-PC-Setup*.exe
+      - name: В релиз
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            out/MUSICH-PC-Setup.exe
+            out/MUSICH-PC-Setup-*.exe
+            out/SHA256SUMS-pc.txt
+
+  android:
+    runs-on: ubuntu-latest
+    env:
+      KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Нет ключа подписи — пропускаю
+        if: env.KEYSTORE == ''
+        run: echo "::warning::Нет секрета ANDROID_KEYSTORE — APK не собираю"
+      - name: Зависимости
+        if: env.KEYSTORE != ''
+        run: npm ci --prefix web --no-audit --no-fund
+      - name: Нет известных серьёзных дыр
+        if: env.KEYSTORE != ''
+        run: npm audit --prefix web --omit=dev --audit-level=high
+      - name: Интерфейс в приложение
+        if: env.KEYSTORE != ''
+        working-directory: web
+        run: npm run app:sync
+      - name: APK
+        if: env.KEYSTORE != ''
+        working-directory: web/android
+        env:
+          MUSICH_KEYSTORE: ${{ runner.temp }}/musich.jks
+          MUSICH_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          MUSICH_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          MUSICH_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE" | base64 -d > "$MUSICH_KEYSTORE"
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+          rm -f "$MUSICH_KEYSTORE"
+          v=$(node -p "require('../package.json').version")
+          mkdir -p ../../out
+          cp app/build/outputs/apk/release/app-release.apk ../../out/MUSICH.apk
+          cp app/build/outputs/apk/release/app-release.apk "../../out/MUSICH-$v.apk"
+          cd ../../out && sha256sum MUSICH*.apk > SHA256SUMS-android.txt
+      - name: Подпись GitHub
+        if: env.KEYSTORE != ''
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: out/MUSICH*.apk
+      - name: В релиз
+        if: env.KEYSTORE != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            out/MUSICH.apk
+            out/MUSICH-*.apk
+            out/SHA256SUMS-android.txt
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Имя образа и теги
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/musich
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest
+      - name: Сборка и выкладка
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=max # откуда и как собран
+          sbom: true # список всего, что внутри образа
+      - name: Подпись GitHub
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/musich
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

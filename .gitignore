@@ -1,0 +1,54 @@
+# MUSICH — что не попадает в git
+
+# зависимости и сборки
+node_modules/
+dist/
+dist-app/
+dist-desktop/
+*.tsbuildinfo
+
+# данные и секреты рабочего сервера: база (пользователи, хэши паролей, ключи интеграций), бэкапы, логи
+.env
+.env.*
+!.env.example
+# режимы сборки интерфейса — без секретов, нужны сборке приложений на GitHub
+!web/.env.device
+!web/.env.desktop
+server/.local/
+data/
+music/
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+# сборки приложения для телефона
+*.apk
+*.aab
+web/android/app/build/
+web/android/build/
+web/android/.gradle/
+web/android/local.properties
+web/android/app/src/main/assets/public/
+*.keystore
+*.jks
+
+# редакторы и система
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# временное
+trailer/out/
+
+# сборка установщика для Windows
+deploy/windows/out/
+
+# приложение для ПК (Tauri)
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+
+# собранные установщики в корне проекта
+/MUSICH-PC-Setup.exe

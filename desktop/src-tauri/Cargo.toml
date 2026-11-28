@@ -1,0 +1,33 @@
+[package]
+name = "musich-desktop"
+version = "0.1.0"
+description = "MUSICH для ПК"
+authors = ["rozev"]
+license-file = "../../LICENSE"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "protocol-asset"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-single-instance = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
+futures-util = "0.3"
+tokio = { version = "1", features = ["fs", "io-util"] }
+mdns-sd = "0.13"
+url = "2"
+fs2 = "0.4"
+gethostname = "0.5"
+uuid = { version = "1", features = ["v4"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

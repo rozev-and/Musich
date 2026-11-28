@@ -1,0 +1,286 @@
+@import "tailwindcss";
+@import "@fontsource/doto/400.css";
+@import "@fontsource/doto/700.css";
+@import "@fontsource/doto/900.css";
+@import "@fontsource-variable/inter";
+@import "@fontsource/jetbrains-mono/400.css";
+/* шрифты на выбор в настройках: файлы качаются, только когда шрифт выбран (и только нужные алфавиты) */
+@import "@fontsource-variable/golos-text";
+@import "@fontsource-variable/manrope";
+@import "@fontsource-variable/montserrat";
+@import "@fontsource-variable/rubik";
+@import "@fontsource-variable/nunito";
+@import "@fontsource-variable/comfortaa";
+@import "@fontsource-variable/unbounded";
+@import "@fontsource-variable/roboto";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/700.css";
+@import "@fontsource/press-start-2p";
+
+/* Токены в духе Nothing: чёрные виджеты, точки, красный только как акцент.
+   Это тема «Nothing» по умолчанию; фон, виджеты и акцент других тем подставляет lib/themes.ts.
+   --red — акцентный цвет (имя историческое: в Nothing он красный) */
+:root {
+  --page: #e8e8e6;
+  --page-dot: #cfcfcc;
+  --ink: #0a0a0a;
+  --ink-muted: #6b6b6b;
+  --card: #0d0d0d;
+  --card-2: #1a1a1a;
+  --card-3: #262626;
+  --line: #2a2a2a;
+  --fg: #f4f4f4;
+  --muted: #8a8a8a;
+  --dot-off: #343434;
+  --red: #d71921;
+  --on-red: #ffffff; /* текст поверх акцента */
+  --page-gradient: none;
+  --green: #2fbf5b;
+  --widget-border: transparent;
+  /* цвет текста виджетов темы — чтобы вернуть его там, где --fg переопределён (большой плеер) */
+  --widget-fg: var(--fg);
+  --widget-muted: var(--muted);
+}
+
+:root[data-theme="dark"] {
+  --page: #000000;
+  --page-dot: #161616;
+  --ink: #f4f4f4;
+  --ink-muted: #8a8a8a;
+  --card: #111111;
+  --card-2: #1b1b1b;
+  --card-3: #272727;
+  --line: #252525;
+  --widget-border: #1f1f1f;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-card-3: var(--card-3);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-dot-off: var(--dot-off);
+  --color-red: var(--red);
+  --color-on-red: var(--on-red);
+  /* цвет выделения (выбранный пункт, переключатель, главная кнопка): по умолчанию — цвет текста, как в Nothing.
+     sel — внутри виджетов, sel-page — прямо на фоне страницы */
+  --color-sel: var(--sel, var(--fg));
+  --color-on-sel: var(--on-sel, var(--card));
+  --color-sel-page: var(--sel, var(--ink));
+  --color-on-sel-page: var(--on-sel, var(--page));
+  --color-green: var(--green);
+  /* --font-script — системный шрифт для букв, которых нет в Inter (арабские, иероглифы).
+     --user-font — шрифт из настроек (меняет всё, кроме логотипа), --theme-font — шрифт темы (Терминал Linux, Матрица) */
+  --font-sans: var(--user-font, var(--theme-font, "Inter Variable")), var(--font-script), ui-sans-serif, system-ui, sans-serif;
+  /* Doto — только латиница и цифры: им пишем числа и логотип */
+  --font-dot: var(--user-font, "Doto"), "JetBrains Mono", var(--font-script), monospace;
+  --font-mono: var(--user-font, "JetBrains Mono"), var(--font-script), ui-monospace, monospace;
+  /* логотип всегда точечный, какой бы шрифт ни выбрали */
+  --font-logo: "Doto", "JetBrains Mono", monospace;
+  --radius-widget: 28px;
+  /* скругления масштабируются одним множителем --rk из настроек (0 — острые углы, 1 — как в Nothing); круглое остаётся круглым */
+  --radius-xs: calc(.125rem * var(--rk, 1));
+  --radius-sm: calc(.25rem * var(--rk, 1));
+  --radius-md: calc(.375rem * var(--rk, 1));
+  --radius-lg: calc(.5rem * var(--rk, 1));
+  --radius-xl: calc(.75rem * var(--rk, 1));
+  --radius-2xl: calc(1rem * var(--rk, 1));
+  --radius-3xl: calc(1.5rem * var(--rk, 1));
+}
+
+/* Шрифты для чужих алфавитов задаём сами. Если оставить выбор браузеру, на Windows для японского
+   он берёт Meiryo с очень высокими строками — и при смене языка весь интерфейс «раздувается». */
+:root { --font-script: "Segoe UI"; }
+:root:lang(ar) { --font-script: "Segoe UI", "Noto Sans Arabic", "Geeza Pro"; }
+:root:lang(zh) { --font-script: "Microsoft YaHei UI", "PingFang SC", "Noto Sans SC"; }
+:root:lang(ja) { --font-script: "Yu Gothic UI", "Hiragino Sans", "Noto Sans JP"; }
+
+/* Базовый размер фиксируем: Firefox берёт его из настроек конкретного языка страницы,
+   и без этого смена языка меняла бы масштаб всего интерфейса (всё в rem). */
+html { font-size: 16px; }
+
+html, body, #root { height: 100%; }
+
+/* Телефон: приложение рисуется во весь экран, под строкой состояния и полоской жестов (viewport-fit=cover) —
+   отступаем на их высоту. В браузере на ПК env() — ноль, ничего не меняется */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+#root { box-sizing: border-box; padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left); }
+/* узкий экран: что бы ни оказалось шире экрана, страница не уезжает вбок */
+html, body { overflow-x: hidden; }
+
+body {
+  background-color: var(--page);
+  /* точки поверх градиента темы (у большинства тем градиента нет) */
+  background-image: radial-gradient(var(--page-dot) 1px, transparent 1.2px), var(--page-gradient);
+  /* сколько слоёв у градиента темы, столько и размеров — считает lib/themes.ts */
+  background-size: var(--page-bg-size, 18px 18px);
+  background-attachment: var(--page-bg-attach, scroll);
+  background-position: var(--page-bg-pos, 0 0);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .3s, color .3s;
+}
+
+/* Маленькие подписи капсом — фирменная деталь */
+.label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* круглое остаётся круглым при любом скруглении, кроме 0: тогда острые углы у всего, и у пилюль тоже */
+.rounded-full { border-radius: calc(9999px * var(--rk, 1)); }
+.rounded { border-radius: calc(.25rem * var(--rk, 1)); }
+
+.widget {
+  /* прозрачность из настроек: сквозь блок виден фон темы (точки, градиент). Без размытия: под обычным блоком
+     только фон страницы, и размытие превращало точки в ровную заливку — блок выглядел плотным, а видеочип
+     пересчитывал размытие под каждым блоком при прокрутке */
+  background: color-mix(in srgb, var(--card) var(--widget-opacity, 100%), transparent);
+  color: var(--fg);
+  border-radius: calc(var(--radius-widget) * var(--rk, 1));
+  box-shadow: inset 0 0 0 1px var(--widget-border);
+}
+/* блоки, под которыми едет содержимое (мини-плеер, нижнее меню, плеер на ПК): прозрачность та же,
+   а размытие нужно — иначе сквозь них читались бы строки списка */
+.widget.float, .widget.fixed { backdrop-filter: var(--widget-blur, none); }
+/* окна поверх страницы всегда плотные — под ними и так затемнение */
+.widget.solid { background: var(--card); backdrop-filter: none; }
+/* выпадающие меню и окошки поверх содержимого: при прозрачных блоках они сливались бы с тем, что под ними —
+   не прозрачнее 92% и всегда с размытием */
+.widget.absolute, .widget.sticky {
+  background: color-mix(in srgb, var(--card) max(var(--widget-opacity, 100%), 92%), transparent);
+  backdrop-filter: blur(24px);
+}
+
+/* полосы прокрутки — тонкие и в цвет темы (новый Chrome смотрит на эти свойства, а не на ::-webkit-scrollbar) */
+* { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--muted) 40%, transparent) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #8885; border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+/* телефон и планшет: полосы прокрутки не нужны — листают пальцем, а место они съедают */
+@media (pointer: coarse) {
+  * { scrollbar-width: none; }
+  ::-webkit-scrollbar { display: none; }
+}
+
+@keyframes blink { 50% { opacity: .25; } }
+.blink { animation: blink 1.2s steps(2) infinite; }
+
+@keyframes slide-up { from { transform: translateY(24px); opacity: 0; } }
+/* полноэкранный плеер: тот же фон, что у страницы (режим и тема), — виджеты и текст тоже из темы */
+/* смена трека кнопкой на телефоне: старая обложка уезжает и гаснет, новая въезжает чуть уменьшенной (как свайп) */
+@keyframes cover-in-next { from { transform: translateX(calc(100% + 16px)) scale(.9); } to { transform: none; } }
+@keyframes cover-in-prev { from { transform: translateX(calc(-100% - 16px)) scale(.9); } to { transform: none; } }
+@keyframes cover-out-next { from { transform: none; } to { transform: translateX(calc(-100% - 16px)) scale(.9); filter: brightness(.45); } }
+@keyframes cover-out-prev { from { transform: none; } to { transform: translateX(calc(100% + 16px)) scale(.9); filter: brightness(.45); } }
+.cover-in-next { animation: cover-in-next .4s cubic-bezier(.2,.8,.2,1) both; }
+.cover-in-prev { animation: cover-in-prev .4s cubic-bezier(.2,.8,.2,1) both; }
+.cover-out-next { animation: cover-out-next .4s cubic-bezier(.2,.8,.2,1) both; }
+.cover-out-prev { animation: cover-out-prev .4s cubic-bezier(.2,.8,.2,1) both; }
+
+/* мини-плеер на телефоне: трек сменился кнопкой или сам — карточка уезжает, новая въезжает */
+@keyframes card-in-next { from { transform: translateX(calc(100% + 12px)); } to { transform: none; } }
+@keyframes card-in-prev { from { transform: translateX(calc(-100% - 12px)); } to { transform: none; } }
+@keyframes card-out-next { from { transform: none; } to { transform: translateX(calc(-100% - 12px)); } }
+@keyframes card-out-prev { from { transform: none; } to { transform: translateX(calc(100% + 12px)); } }
+.card-in-next { animation: card-in-next .36s cubic-bezier(.2,.8,.2,1) both; }
+.card-in-prev { animation: card-in-prev .36s cubic-bezier(.2,.8,.2,1) both; }
+.card-out-next { animation: card-out-next .36s cubic-bezier(.2,.8,.2,1) both; }
+.card-out-prev { animation: card-out-prev .36s cubic-bezier(.2,.8,.2,1) both; }
+
+.full-player {
+  transition: background-color .6s ease;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+  /* плеер лежит прямо на фоне страницы: текст — как у страницы, а в виджетах и меню — как у виджетов */
+  --fg: var(--ink);
+  --muted: var(--ink-muted);
+  animation: slide-up .25s ease-out;
+  background-color: var(--page);
+  background-image: radial-gradient(var(--page-dot) 1px, transparent 1.2px), var(--page-gradient);
+  background-size: var(--page-bg-size, 18px 18px);
+  background-position: var(--page-bg-pos, 0 0);
+}
+
+.full-player .widget, .full-player .widget-text {
+  --fg: var(--widget-fg);
+  --muted: var(--widget-muted);
+}
+
+/* окно во весь экран прямо на фоне страницы (поиск): фон с точками и градиентом темы, текст — как у страницы,
+   в виджетах — как у виджетов. Без этого текст брал цвета виджета (светлый на светлом фоне) и не следовал теме */
+.page-layer {
+  --fg: var(--ink);
+  --muted: var(--ink-muted);
+  color: var(--ink);
+  background-color: var(--page);
+  background-image: radial-gradient(var(--page-dot) 1px, transparent 1.2px), var(--page-gradient);
+  background-size: var(--page-bg-size, 18px 18px);
+  background-position: var(--page-bg-pos, 0 0);
+}
+.page-layer .widget, .page-layer .widget-text {
+  --fg: var(--widget-fg);
+  --muted: var(--widget-muted);
+}
+
+/* «пружинка»: значок кнопки после нажатия/смены состояния */
+@keyframes pop { 0% { transform: scale(.55); opacity: .3; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+.pop { animation: pop .32s cubic-bezier(.2,.9,.3,1.3); }
+/* въезд снизу: строки очереди при открытии */
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+.rise { animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+
+@keyframes slide-down { to { transform: translateY(32px); opacity: 0; } }
+.full-player-out { animation: slide-down .24s ease-in forwards; }
+
+/* смена вкладки: короткое мягкое проявление вместо рывка */
+@keyframes view-in { from { opacity: .35; transform: translateY(6px); } }
+.view-in { animation: view-in .18s cubic-bezier(.2,.8,.2,1) both; }
+
+@keyframes eq { 0%,100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+
+/* экономия заряда: размытие под блоками и бесконечные анимации видеочип пересчитывает каждый кадр — выключаем.
+   Блоки плотные: без размытия полупрозрачный блок плохо читается. Перелистывание и переходы остаются */
+/* обычные блоки остаются прозрачными (это ничего не стоит), плотнеют только плавающие — без размытия их не прочитать */
+:root[data-saver='on'] .widget.float, :root[data-saver='on'] .widget.fixed, :root[data-saver='on'] .widget.absolute, :root[data-saver='on'] .widget.sticky { background: var(--card); backdrop-filter: none; }
+:root[data-saver='on'] [class*='backdrop-blur'] { backdrop-filter: none; }
+:root[data-saver='on'] .blink, :root[data-saver='on'] .animate-spin, :root[data-saver='on'] .animate-pulse { animation: none; }
+
+/* кому движение мешает (настройка системы) — без анимаций */
+/* «Анимации» выключены в настройках — как системное «уменьшить движение», только для MUSICH */
+:root[data-motion='off'] .card-in-next, :root[data-motion='off'] .card-in-prev, :root[data-motion='off'] .card-out-next, :root[data-motion='off'] .card-out-prev, :root[data-motion='off'] .cover-in-next, :root[data-motion='off'] .cover-in-prev, :root[data-motion='off'] .cover-out-next, :root[data-motion='off'] .cover-out-prev, :root[data-motion='off'] .pop, :root[data-motion='off'] .rise, :root[data-motion='off'] .view-in, :root[data-motion='off'] .full-player, :root[data-motion='off'] .full-player-out { animation: none; }
+:root[data-motion='off'] *, :root[data-motion='off'] *::before, :root[data-motion='off'] *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pop, .rise, .view-in, .full-player, .full-player-out, .cover-in-next, .cover-in-prev, .cover-out-next, .cover-out-prev, .card-in-next, .card-in-prev, .card-out-next, .card-out-prev { animation: none; }
+  .transition-all, [class*='transition-'] { transition-duration: 1ms !important; }
+}
+
+/* шторка снизу (таймер сна) */
+@keyframes sheet-up { from { transform: translateY(100%); } }
+.sheet-up { animation: sheet-up .28s cubic-bezier(.2,.9,.3,1); }
+
+/* Длинные списки: строки за краем экрана браузер не раскладывает и не рисует, пока до них не долистаешь.
+   auto 68px — примерная высота строки, чтобы полоса прокрутки не прыгала; дальше браузер запоминает настоящую */
+.row-lazy { content-visibility: auto; contain-intrinsic-size: auto 68px; }
+/* карточки альбомов и артистов за экраном не раскладываются и не рисуются (как строки треков) */
+.card-lazy { content-visibility: auto; contain-intrinsic-size: auto 240px; }
+@keyframes load-slide { from { transform: translateX(-100%); } to { transform: translateX(250%); } }

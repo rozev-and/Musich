@@ -1,0 +1,37 @@
+# зависимости и сборки — ставятся и собираются внутри образа
+**/node_modules
+**/dist
+**/.vite
+**/coverage
+**/*.tsbuildinfo
+
+
+# клиент синхронизации живёт на устройствах, серверу не нужен
+sync
+
+# локальные данные сервера, если запускали его без docker
+server/data
+server/music
+**/*.db
+**/*.db-*
+
+# секреты и окружение
+.env
+.env.*
+!.env.example
+
+# деплой, документация, служебное
+deploy
+docs
+*.md
+.git
+.gitignore
+.dockerignore
+docker-compose*.yml
+Dockerfile
+**/.DS_Store
+**/Thumbs.db
+**/*.log
+.vscode
+.idea
+.claude

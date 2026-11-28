@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="playback_channel">Playback</string>
+    <string name="np_prev">Previous</string>
+    <string name="np_play">Play</string>
+    <string name="np_pause">Pause</string>
+    <string name="np_next">Next</string>
+    <string name="widget_idle">Nothing is playing</string>
+    <string name="widget_desc">Now playing and controls</string>
+</resources>

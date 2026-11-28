@@ -1,0 +1,15 @@
+{
+  "name": "musich-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MUSICH для ПК: своя копия музыки и библиотеки, как у телефона, в своём окне (Tauri 2)",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "icons": "node scripts/icon.mjs && tauri icon src-tauri/icons/source.png && node -e \"for (const f of ['android','ios','icon.icns','64x64.png']) require('fs').rmSync('src-tauri/icons/'+f,{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

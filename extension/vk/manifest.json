@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "MUSICH ← VK",
+  "version": "1.0.0",
+  "description": "Забирает «Мою музыку» из VK в твой MUSICH — сам, пока ты заходишь на vk.com",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": ["https://vk.com/*", "__SERVER_MATCH__"],
+  "background": { "service_worker": "background.js", "scripts": ["config.js", "background.js"] },
+  "content_scripts": [
+    { "matches": ["https://vk.com/*"], "js": ["page.js"], "world": "MAIN", "run_at": "document_idle" },
+    { "matches": ["https://vk.com/*"], "js": ["bridge.js"], "run_at": "document_idle" }
+  ],
+  "action": { "default_title": "MUSICH ← VK", "default_popup": "popup.html" },
+  "browser_specific_settings": { "gecko": { "id": "musich-vk@musich.local", "strict_min_version": "128.0" } }
+}

@@ -1,0 +1,10 @@
+# все текстовые файлы — с LF: собираются в Linux-контейнере и на раннере
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.vbs text eol=crlf
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.woff2 binary
+*.jar binary
